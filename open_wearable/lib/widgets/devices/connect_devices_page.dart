@@ -154,6 +154,7 @@ class _ConnectDevicesPageState extends State<ConnectDevicesPage> {
         trailingActions: [
           const AppBarRecordingIndicator(),
           PlatformIconButton(
+            key: const ValueKey('ui.scan.start'),
             icon: _scanSnapshot.isScanning
                 ? const SizedBox(
                     width: 18,
@@ -195,6 +196,7 @@ class _ConnectDevicesPageState extends State<ConnectDevicesPage> {
                     'Allow Bluetooth and Location so the app can find and connect to your wearable.',
                   ),
                   trailing: PlatformElevatedButton(
+                    key: const ValueKey('ui.scan.enableBluetooth'),
                     onPressed: _requestBlePermissions,
                     child: const Text('Enable'),
                   ),
@@ -215,6 +217,7 @@ class _ConnectDevicesPageState extends State<ConnectDevicesPage> {
                     'OpenWearables can record audio from the device microphone for synchronized audio data. Grant microphone access to enable this.',
                   ),
                   trailing: PlatformElevatedButton(
+                    key: const ValueKey('ui.scan.enableMicrophone'),
                     onPressed: _requestMicPermission,
                     child: const Text('Enable'),
                   ),
@@ -276,6 +279,9 @@ class _ConnectDevicesPageState extends State<ConnectDevicesPage> {
                 return Card(
                   margin: const EdgeInsets.only(bottom: 8),
                   child: PlatformListTile(
+                    key: isThisDevice
+                        ? const ValueKey('ui.scan.thisDevice')
+                        : ValueKey('ui.scan.device.${device.id}'),
                     leading: Icon(
                       isThisDevice ? Icons.smartphone : Icons.bluetooth,
                     ),
@@ -291,6 +297,7 @@ class _ConnectDevicesPageState extends State<ConnectDevicesPage> {
               }),
             const SizedBox(height: 10),
             PlatformElevatedButton(
+              key: const ValueKey('ui.scan.again'),
               onPressed: _scanSnapshot.isScanning
                   ? null
                   : () => _startScanningIfAllowed(clearPrevious: true),
@@ -463,6 +470,7 @@ class _ConnectDevicesPageState extends State<ConnectDevicesPage> {
         Transform.scale(
           scale: 0.75,
           child: Switch.adaptive(
+            key: const ValueKey('ui.scan.openEarableFilter'),
             value: _showOnlyOpenEarableDevices,
             onChanged: (value) {
               setState(() {
@@ -530,6 +538,7 @@ class _ConnectDevicesPageState extends State<ConnectDevicesPage> {
                 ),
               )
             : PlatformTextButton(
+                key: ValueKey('ui.scan.connect.${device.id}'),
                 onPressed: onConnect,
                 child: const Text('Connect'),
               ),

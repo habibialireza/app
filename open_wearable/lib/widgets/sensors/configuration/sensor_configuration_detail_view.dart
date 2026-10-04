@@ -80,6 +80,7 @@ class SensorConfigurationDetailView extends StatelessWidget {
             children: [
               for (var i = 0; i < targetOptions.length; i++) ...[
                 _OptionToggleTile(
+                  configurationName: sensorConfiguration.name,
                   option: targetOptions[i],
                   accentColor: accentColor,
                   selected: sensorConfigNotifier
@@ -132,6 +133,9 @@ class SensorConfigurationDetailView extends StatelessWidget {
                     ),
               )
             : DropdownButtonFormField<SensorConfigurationValue>(
+                key: ValueKey(
+                  'ui.sensor.rate.${sensorConfiguration.name}',
+                ),
                 initialValue: dropdownSelection,
                 isExpanded: true,
                 decoration: InputDecoration(
@@ -342,12 +346,14 @@ class SensorConfigurationDetailView extends StatelessWidget {
 }
 
 class _OptionToggleTile extends StatelessWidget {
+  final String configurationName;
   final SensorConfigurationOption option;
   final Color accentColor;
   final bool selected;
   final ValueChanged<bool> onChanged;
 
   const _OptionToggleTile({
+    required this.configurationName,
     required this.option,
     required this.accentColor,
     required this.selected,
@@ -411,6 +417,13 @@ class _OptionToggleTile extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           Switch.adaptive(
+            key: ValueKey(
+              option is StreamSensorConfigOption
+                  ? 'ui.sensor.target.$configurationName.stream'
+                  : option is RecordSensorConfigOption
+                      ? 'ui.sensor.target.$configurationName.record'
+                      : 'ui.sensor.target.$configurationName.${option.name}',
+            ),
             value: selected,
             activeThumbColor: colorScheme.surface,
             activeTrackColor: accentColor,

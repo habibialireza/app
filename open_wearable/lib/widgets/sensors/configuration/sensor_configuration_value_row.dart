@@ -98,6 +98,9 @@ class SensorConfigurationValueRow extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
+          key: ValueKey(
+            'ui.sensor.config.${sensorConfiguration.name}',
+          ),
           borderRadius: BorderRadius.circular(8),
           onTap: () => _openConfigurationSheet(context, primaryProvider),
           child: Padding(
@@ -233,6 +236,7 @@ class SensorConfigurationValueRow extends StatelessWidget {
                           ),
                           const SizedBox(width: 8),
                           IconButton(
+                            key: const ValueKey('ui.sensor.config.close'),
                             tooltip: 'Close',
                             onPressed: () => Navigator.of(modalContext).pop(),
                             icon: const Icon(Icons.close_rounded, size: 20),

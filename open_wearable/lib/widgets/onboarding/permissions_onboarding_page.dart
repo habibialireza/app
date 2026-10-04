@@ -86,6 +86,7 @@ class PermissionsWelcomePage extends StatelessWidget {
                         const Spacer(),
                         const SizedBox(height: 32),
                         PlatformElevatedButton(
+                          key: const ValueKey('ui.onboarding.getStarted'),
                           onPressed: () => _continue(context),
                           child: const Text('Get Started'),
                         ),
@@ -398,6 +399,7 @@ class _BluetoothPermissionsPageState extends State<BluetoothPermissionsPage>
               const Spacer(),
               const SizedBox(height: 32),
               PlatformElevatedButton(
+                key: const ValueKey('ui.onboarding.bluetooth'),
                 onPressed: _requestInProgress ? null : _request,
                 child: Text(
                   _requestInProgress
@@ -409,6 +411,7 @@ class _BluetoothPermissionsPageState extends State<BluetoothPermissionsPage>
               ),
               const SizedBox(height: 8),
               PlatformTextButton(
+                key: const ValueKey('ui.onboarding.skipBluetooth'),
                 onPressed: _requestInProgress ? null : _completeOnboarding,
                 child: const Text('Skip for now'),
               ),
@@ -536,6 +539,7 @@ class _MicrophonePermissionsPageState extends State<MicrophonePermissionsPage> {
               const Spacer(),
               const SizedBox(height: 32),
               PlatformElevatedButton(
+                key: const ValueKey('ui.onboarding.microphone'),
                 onPressed: _requestInProgress ? null : _request,
                 child: Text(
                   _requestInProgress ? 'Requesting...' : 'Enable Microphone',
@@ -543,6 +547,7 @@ class _MicrophonePermissionsPageState extends State<MicrophonePermissionsPage> {
               ),
               const SizedBox(height: 8),
               PlatformTextButton(
+                key: const ValueKey('ui.onboarding.skipMicrophone'),
                 onPressed: _requestInProgress ? null : _completeOnboarding,
                 child: const Text('Skip for now'),
               ),

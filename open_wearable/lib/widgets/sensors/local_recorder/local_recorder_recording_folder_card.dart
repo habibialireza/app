@@ -12,6 +12,7 @@ class LocalRecorderRecordingFolderCard extends StatelessWidget {
   final VoidCallback onToggleExpanded;
   final VoidCallback onShareFolder;
   final VoidCallback onDeleteFolder;
+  final Key? deleteButtonKey;
   final void Function(LocalRecorderRecordingFile file) onShareFile;
   final void Function(LocalRecorderRecordingFile file) onOpenFile;
   final String Function(int bytes) formatFileSize;
@@ -29,6 +30,7 @@ class LocalRecorderRecordingFolderCard extends StatelessWidget {
     required this.onToggleExpanded,
     required this.onShareFolder,
     required this.onDeleteFolder,
+    this.deleteButtonKey,
     required this.onShareFile,
     required this.onOpenFile,
     required this.formatFileSize,
@@ -76,6 +78,7 @@ class LocalRecorderRecordingFolderCard extends StatelessWidget {
                         icon: Icon(Icons.ios_share, color: colorScheme.primary),
                       ),
                       IconButton(
+                        key: deleteButtonKey,
                         tooltip: 'Delete folder',
                         onPressed: onDeleteFolder,
                         icon: Icon(
@@ -175,6 +178,7 @@ class _LocalRecorderRecordingFileTile extends StatelessWidget {
     final isCsv = file.name.toLowerCase().endsWith('.csv');
 
     return ListTile(
+      key: ValueKey('ui.recorder.file.${file.name}'),
       contentPadding: const EdgeInsets.fromLTRB(58, 2, 10, 2),
       dense: true,
       leading: Icon(

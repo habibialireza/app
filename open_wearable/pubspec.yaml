@@ -68,6 +68,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  patrol: 4.10.0
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -80,6 +81,15 @@ dependency_overrides:
   file_picker: 11.0.2
   mcumgr_flutter: 0.9.1
   universal_ble: 2.0.2
+
+# Android Patrol runs use the isolated debug application ID configured in
+# android/app/build.gradle. The regular release app keeps its production ID.
+patrol:
+  app_name: OpenWearables Test
+  test_directory: patrol_test
+  screenshot_on_failure: true
+  android:
+    package_name: edu.kit.teco.openWearable.patrol
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

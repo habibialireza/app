@@ -303,6 +303,7 @@ class _DeviceDetailPageState extends State<DeviceDetailPage> {
     ];
 
     return PlatformScaffold(
+      key: ValueKey('ui.device.details.${widget.device.deviceId}'),
       appBar: PlatformAppBar(
         title: const Text('Device details'),
       ),
@@ -404,6 +405,11 @@ class _DeviceDetailPageState extends State<DeviceDetailPage> {
               children: [
                 Expanded(
                   child: OutlinedButton.icon(
+                    key: ValueKey(
+                      _canForgetDevice
+                          ? 'ui.device.forgetSystem'
+                          : 'ui.device.disconnect',
+                    ),
                     onPressed: _canForgetDevice
                         ? _showForgetDialog
                         : _disconnectDevice,

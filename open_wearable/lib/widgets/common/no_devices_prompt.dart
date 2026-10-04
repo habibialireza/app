@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 
 class NoDevicesPrompt extends StatelessWidget {
   final VoidCallback onScanPressed;
+  final Key? scanButtonKey;
   final String title;
   final String subtitle;
 
   const NoDevicesPrompt({
     super.key,
     required this.onScanPressed,
+    this.scanButtonKey,
     this.title = 'No devices connected',
     this.subtitle = 'Scan for devices to start streaming and recording data.',
   });
@@ -60,6 +62,7 @@ class NoDevicesPrompt extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           FilledButton.icon(
+            key: scanButtonKey,
             onPressed: onScanPressed,
             icon: const Icon(Icons.search_rounded, size: 18),
             label: const Text('Scan for devices'),

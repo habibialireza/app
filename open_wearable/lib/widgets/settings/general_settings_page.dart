@@ -155,6 +155,9 @@ class _GeneralSettingsPageState extends State<GeneralSettingsPage> {
                               _buildSettingGroup(
                                 [
                                   SwitchListTile.adaptive(
+                                    key: const ValueKey(
+                                      'ui.settings.autoConnect',
+                                    ),
                                     value: autoConnectEnabled,
                                     onChanged: _isSaving
                                         ? null
@@ -181,6 +184,9 @@ class _GeneralSettingsPageState extends State<GeneralSettingsPage> {
                               _buildSettingGroup(
                                 [
                                   SwitchListTile.adaptive(
+                                    key: const ValueKey(
+                                      'ui.settings.keepScreenAwake',
+                                    ),
                                     value: keepAppInForeground,
                                     onChanged: _isSaving
                                         ? null
@@ -207,6 +213,9 @@ class _GeneralSettingsPageState extends State<GeneralSettingsPage> {
                               _buildSettingGroup(
                                 [
                                   SwitchListTile.adaptive(
+                                    key: const ValueKey(
+                                      'ui.settings.disableSensorsOnClose',
+                                    ),
                                     value: shutOffOnCloseEnabled,
                                     onChanged: _isSaving
                                         ? null
@@ -233,6 +242,9 @@ class _GeneralSettingsPageState extends State<GeneralSettingsPage> {
                               _buildSettingGroup(
                                 [
                                   SwitchListTile.adaptive(
+                                    key: const ValueKey(
+                                      'ui.settings.disableLiveGraphs',
+                                    ),
                                     value: disableLiveGraphsEnabled,
                                     onChanged: _isSaving
                                         ? null
@@ -248,6 +260,9 @@ class _GeneralSettingsPageState extends State<GeneralSettingsPage> {
                                     ),
                                   ),
                                   SwitchListTile.adaptive(
+                                    key: const ValueKey(
+                                      'ui.settings.hideEmptyGraphs',
+                                    ),
                                     value: hideLiveGraphsWithoutDataEnabled,
                                     onChanged: _isSaving
                                         ? null
