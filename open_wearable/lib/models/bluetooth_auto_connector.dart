@@ -496,6 +496,7 @@ class BluetoothAutoConnector {
           ),
           actions: [
             PlatformDialogAction(
+              key: const ValueKey('ui.permissions.required.cancel'),
               onPressed: nav.pop,
               child: PlatformText("Cancel"),
             ),

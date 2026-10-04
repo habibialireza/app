@@ -135,8 +135,14 @@ class _HomePageState extends State<HomePage> {
       items: _destinations
           .map(
             (destination) => BottomNavigationBarItem(
-              icon: Icon(destination.icon),
-              activeIcon: Icon(destination.selectedIcon),
+              icon: Icon(
+                destination.icon,
+                key: ValueKey('ui.nav.${destination.title.toLowerCase()}'),
+              ),
+              activeIcon: Icon(
+                destination.selectedIcon,
+                key: ValueKey('ui.nav.${destination.title.toLowerCase()}'),
+              ),
               label: destination.title,
             ),
           )
@@ -167,8 +173,18 @@ class _HomePageState extends State<HomePage> {
               destinations: _destinations
                   .map(
                     (destination) => NavigationRailDestination(
-                      icon: Icon(destination.icon),
-                      selectedIcon: Icon(destination.selectedIcon),
+                      icon: Icon(
+                        destination.icon,
+                        key: ValueKey(
+                          'ui.nav.${destination.title.toLowerCase()}',
+                        ),
+                      ),
+                      selectedIcon: Icon(
+                        destination.selectedIcon,
+                        key: ValueKey(
+                          'ui.nav.${destination.title.toLowerCase()}',
+                        ),
+                      ),
                       label: Text(destination.title),
                     ),
                   )

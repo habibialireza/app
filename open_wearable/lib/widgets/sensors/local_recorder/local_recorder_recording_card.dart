@@ -243,6 +243,7 @@ class _RecorderPrimaryButton extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       child: FilledButton.icon(
+        key: const ValueKey('ui.recorder.startStop'),
         style: isRecording
             ? FilledButton.styleFrom(
                 backgroundColor: colorScheme.error,

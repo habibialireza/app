@@ -33,6 +33,11 @@ migrate_working_dir/
 .pub/
 /build/
 
+# Patrol-generated entry point, local test settings, and run artifacts.
+**/test_bundle.dart
+.patrol.env
+/test-results/
+
 # Generated plugin registrants
 **/GeneratedPluginRegistrant.swift
 **/generated_plugin_registrant.cc

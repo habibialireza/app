@@ -43,77 +43,84 @@ import 'view_models/wearables_provider.dart';
 
 const bool _isAppStorePreview = bool.fromEnvironment('APP_STORE_PREVIEW');
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  runApp(await createApp());
+}
+
+/// Initializes the app's production services and returns its root widget.
+///
+/// The caller must initialize Flutter's binding first. Keeping initialization
+/// separate from [runApp] lets on-device UI tests await the same startup before
+/// mounting the app with their test binding. Create once per app process; the
+/// router and device services retain process-wide state.
+Future<Widget> createApp() async {
   LogFileManager logFileManager = await LogFileManager.create();
   final wearableConnector = WearableConnector();
   initOpenWearableLogger(logFileManager.libLogger);
   initLogger(logFileManager.logger);
 
   if (_isAppStorePreview) {
-    runApp(AppStorePreviewApp(logFileManager: logFileManager));
-    return;
+    return AppStorePreviewApp(logFileManager: logFileManager);
   }
 
   await AutoConnectPreferences.initialize();
   await AppShutdownSettings.initialize();
   await ConnectorSettings.initialize(wearableConnector: wearableConnector);
 
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (context) => WearablesProvider()),
-        ChangeNotifierProvider(
-          create: (context) => FirmwareUpdateRequestProvider(),
-        ),
-        ChangeNotifierProvider(
-          create: (context) => LabelGroupProvider(),
-        ),
-        ChangeNotifierProxyProvider<LabelGroupProvider, LabelProvider>(
-          create: (context) => LabelProvider(null),
-          update: (context, labelGroupProvider, labelProvider) {
-            labelProvider?.setLabelGroup(labelGroupProvider.selectedLabelGroup);
-            return labelProvider!;
-          },
-        ),
-        ChangeNotifierProxyProvider2<WearablesProvider, LabelGroupProvider,
-            SensorRecorderProvider>(
-          create: (context) => SensorRecorderProvider(),
-          update: (
-            context,
-            wearablesProvider,
-            labelGroupProvider,
-            recorderProvider,
-          ) {
-            final provider = recorderProvider ?? SensorRecorderProvider();
-            final labelGroup = labelGroupProvider.selectedLabelGroup;
-            final wearables = [...wearablesProvider.wearables];
-            if (labelGroup != null) {
-              final labelProvider = context.read<LabelProvider>();
-              wearables.add(
-                LabelWearable(
-                  labelGroup: labelGroup,
-                  labelStream: labelProvider.activeLabelStream,
-                ),
-              );
-            }
-            logger.t(
-              'Updating SensorRecorderProvider with label group: $labelGroup',
+  return MultiProvider(
+    providers: [
+      ChangeNotifierProvider(create: (context) => WearablesProvider()),
+      ChangeNotifierProvider(
+        create: (context) => FirmwareUpdateRequestProvider(),
+      ),
+      ChangeNotifierProvider(
+        create: (context) => LabelGroupProvider(),
+      ),
+      ChangeNotifierProxyProvider<LabelGroupProvider, LabelProvider>(
+        create: (context) => LabelProvider(null),
+        update: (context, labelGroupProvider, labelProvider) {
+          labelProvider?.setLabelGroup(labelGroupProvider.selectedLabelGroup);
+          return labelProvider!;
+        },
+      ),
+      ChangeNotifierProxyProvider2<WearablesProvider, LabelGroupProvider,
+          SensorRecorderProvider>(
+        create: (context) => SensorRecorderProvider(),
+        update: (
+          context,
+          wearablesProvider,
+          labelGroupProvider,
+          recorderProvider,
+        ) {
+          final provider = recorderProvider ?? SensorRecorderProvider();
+          final labelGroup = labelGroupProvider.selectedLabelGroup;
+          final wearables = [...wearablesProvider.wearables];
+          if (labelGroup != null) {
+            final labelProvider = context.read<LabelProvider>();
+            wearables.add(
+              LabelWearable(
+                labelGroup: labelGroup,
+                labelStream: labelProvider.activeLabelStream,
+              ),
             );
-            provider.synchronizeConnectedWearables(
-              wearables,
-            );
-            return provider;
-          },
-        ),
-        Provider.value(value: wearableConnector),
-        ChangeNotifierProvider(
-          create: (context) => AppBannerController(),
-        ),
-        ChangeNotifierProvider.value(value: logFileManager),
-      ],
-      child: const MyApp(),
-    ),
+          }
+          logger.t(
+            'Updating SensorRecorderProvider with label group: $labelGroup',
+          );
+          provider.synchronizeConnectedWearables(
+            wearables,
+          );
+          return provider;
+        },
+      ),
+      Provider.value(value: wearableConnector),
+      ChangeNotifierProvider(
+        create: (context) => AppBannerController(),
+      ),
+      ChangeNotifierProvider.value(value: logFileManager),
+    ],
+    child: const MyApp(),
   );
 }
 

@@ -63,6 +63,7 @@ class AppUpgradePage extends StatelessWidget {
                       Align(
                         alignment: Alignment.centerRight,
                         child: IconButton(
+                          key: const ValueKey('ui.upgrade.close'),
                           tooltip: 'Close',
                           onPressed: dismiss,
                           icon: const Icon(Icons.close_rounded, size: 20),

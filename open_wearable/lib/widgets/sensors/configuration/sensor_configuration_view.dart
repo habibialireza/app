@@ -261,6 +261,7 @@ class SensorConfigurationView extends StatelessWidget {
     required List<_ConfigApplyTarget> targets,
   }) {
     return PlatformElevatedButton(
+      key: const ValueKey('ui.sensor.apply'),
       onPressed: () => _applyConfigurations(context, targets: targets),
       child: PlatformText('Apply Profiles'),
     );

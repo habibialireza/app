@@ -45,12 +45,14 @@ class SettingsPage extends StatelessWidget {
         padding: SensorPageSpacing.pagePaddingWithBottomInset(context),
         children: [
           _QuickActionTile(
+            key: const ValueKey('ui.settings.general'),
             icon: Icons.tune_rounded,
             title: 'General settings',
             subtitle: 'Manage app-wide behavior',
             onTap: onGeneralSettingsRequested,
           ),
           _QuickActionTile(
+            key: const ValueKey('ui.settings.logs'),
             icon: Icons.receipt_long,
             title: 'Log files',
             subtitle: 'View, share, and remove diagnostic logs',
@@ -58,6 +60,7 @@ class SettingsPage extends StatelessWidget {
           ),
           if (AppUpgradeRegistry.latest != null)
             _QuickActionTile(
+              key: const ValueKey('ui.settings.releases'),
               icon: Icons.auto_awesome_rounded,
               title: 'Release history',
               subtitle: 'Browse app releases',
@@ -65,12 +68,14 @@ class SettingsPage extends StatelessWidget {
             ),
           if (!kIsWeb)
             _QuickActionTile(
+              key: const ValueKey('ui.settings.connectors'),
               icon: ConnectorBranding.icon,
               title: ConnectorBranding.pluralLabel,
               subtitle: 'Configure external API connectors',
               onTap: onConnectorsRequested,
             ),
           _QuickActionTile(
+            key: const ValueKey('ui.settings.about'),
             icon: Icons.info_outline_rounded,
             title: 'About',
             subtitle: 'App information, version, and licenses',
@@ -751,6 +756,7 @@ class _QuickActionTile extends StatelessWidget {
   final VoidCallback? onTap;
 
   const _QuickActionTile({
+    super.key,
     required this.icon,
     required this.title,
     required this.subtitle,
