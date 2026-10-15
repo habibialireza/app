@@ -30,24 +30,33 @@ Future<ConnectedOpenEarablePair> connectExactlyTwoOpenEarables(
   await $(UiTestKeys.scanOpenEarableFilter).tap();
 
   final deviceIds = await _discoverExactlyTwoOpenEarables($);
-  for (final deviceId in deviceIds) {
-    debugPrint('PAIR_RUNTIME_DEVICE id="$deviceId"');
-    await _connectExactDevice($, deviceId);
-  }
-
   final pairKey = WearableDisplayGroup.stereoPairKeyForIds(
     deviceIds[0],
     deviceIds[1],
   );
-  await openMainDevicesPage($);
-  await $(UiTestKeys.combinedPair(pairKey)).waitUntilVisible(
-    timeout: const Duration(seconds: 45),
-  );
-
-  return ConnectedOpenEarablePair(
+  final pair = ConnectedOpenEarablePair(
     deviceIds: List.unmodifiable(deviceIds),
     pairKey: pairKey,
   );
+
+  try {
+    for (final deviceId in deviceIds) {
+      debugPrint('PAIR_RUNTIME_DEVICE id="$deviceId"');
+      await _connectExactDevice($, deviceId);
+    }
+  } catch (_) {
+    // Do not leave a half-connected fixture behind when an app overlay or
+    // transient BLE issue interrupts the user journey.
+    await cleanupConnectedPair($, pair);
+    rethrow;
+  }
+
+  await openMainDevicesPage($);
+  await $(UiTestKeys.combinedPair(pair.pairKey)).waitUntilVisible(
+    timeout: const Duration(seconds: 45),
+  );
+
+  return pair;
 }
 
 Future<void> openMainDevicesPage(PatrolIntegrationTester $) async {
@@ -65,6 +74,7 @@ Future<void> cleanupConnectedPair(
   PatrolIntegrationTester $,
   ConnectedOpenEarablePair pair,
 ) async {
+  await dismissFirmwareUpdateNoticeIfShown($);
   await $(UiTestKeys.navDevices).tap();
   await openMainDevicesPage($);
 
@@ -77,6 +87,7 @@ Future<void> cleanupConnectedPair(
   }
 
   for (final deviceId in pair.deviceIds) {
+    await dismissFirmwareUpdateNoticeIfShown($);
     if ($(UiTestKeys.connectedDevice(deviceId)).visible) {
       await _disconnectExactDevice($, deviceId);
     }
@@ -144,6 +155,7 @@ Future<void> _connectExactDevice(
   PatrolIntegrationTester $,
   String deviceId,
 ) async {
+  await dismissFirmwareUpdateNoticeIfShown($);
   final discovered = $(UiTestKeys.scannedDevice(deviceId));
   if (discovered.visible) {
     await _tapDiscoveredAndWaitForConnection($, discovered, deviceId);
@@ -173,8 +185,15 @@ Future<void> _tapDiscoveredAndWaitForConnection(
   String deviceId,
 ) async {
   await discovered.tap();
-  await $(UiTestKeys.connectedDevice(deviceId)).waitUntilVisible(
-    timeout: const Duration(seconds: 60),
+  final connected = $(UiTestKeys.connectedDevice(deviceId));
+  final deadline = DateTime.now().add(const Duration(seconds: 60));
+  while (DateTime.now().isBefore(deadline)) {
+    await dismissFirmwareUpdateNoticeIfShown($);
+    if (connected.visible) return;
+    await $.pump(const Duration(milliseconds: 250));
+  }
+  throw TestFailure(
+    'OpenEarable $deviceId did not become visible as connected within 60 seconds.',
   );
 }
 

@@ -21,6 +21,9 @@ abstract final class UiTestKeys {
     'ui.onboarding.skipMicrophone',
   );
   static const upgradeClose = ValueKey<String>('ui.upgrade.close');
+  static const firmwareUpdateLater = ValueKey<String>(
+    'ui.firmwareUpdate.later',
+  );
   static const permissionRequiredCancel = ValueKey<String>(
     'ui.permissions.required.cancel',
   );
@@ -114,6 +117,9 @@ abstract final class UiTestKeys {
   );
   static const settingsHideEmptyGraphs = ValueKey<String>(
     'ui.settings.hideEmptyGraphs',
+  );
+  static const settingsShowSamplingRates = ValueKey<String>(
+    'ui.settings.showSamplingRates',
   );
 
   static ValueKey<String> scannedDevice(String deviceId) =>
@@ -214,6 +220,17 @@ Future<void> startBleScan(PatrolIntegrationTester $) async {
   await $(UiTestKeys.scanStart).tap(
     settlePolicy: SettlePolicy.noSettle,
   );
+}
+
+/// Dismisses a background firmware notice that can arrive after BLE connects.
+Future<void> dismissFirmwareUpdateNoticeIfShown(
+  PatrolIntegrationTester $,
+) async {
+  final later = $(UiTestKeys.firmwareUpdateLater);
+  if (later.visible) {
+    await later.tap();
+    await $.pump(const Duration(milliseconds: 250));
+  }
 }
 
 /// Connects the phone itself through the same visible discovery row a user taps.

@@ -8,6 +8,11 @@ This catalog separates three different facts that are easy to confuse:
 
 A green suite proves only the assertions listed below. It does not prove every
 feature on the screens that the journey happened to visit.
+The real-phone passes listed here record their specific run dates and fixtures.
+The current main-based Android run passed several existing paths, including
+the pair sample-rate check. See the
+[current regression run](runs/2026-10-15-pixel-9a-upstream-main-regression.md)
+for exact outcomes; historical passes do not substitute for unrun assertions.
 
 ## How to choose a test
 
@@ -116,15 +121,19 @@ an active recording.
 ### `Settings`
 
 File: [`general_settings_test.dart`](../../patrol_test/general_settings_test.dart)  
-Real-device state: **verified** on Pixel 9a, Android 17/API 37.
+Real-device state: all six switches were verified on Pixel 9a, Android 17/API
+37, 2026-10-15: each changed, remained changed after reopening General settings,
+and was restored. Process-relaunch persistence remains planned; see the
+[current regression run](runs/2026-10-15-pixel-9a-upstream-main-regression.md).
 
-It checks each of these five switches:
+It checks each of these six switches:
 
 - Bluetooth auto-connect
 - Keep screen awake
 - Disable all sensors on app close
 - Disable live data graphs
 - Hide live data graphs without data
+- Show sampling rates
 
 For every switch it records the original value, changes it, leaves and reopens
 General settings, confirms that the changed value remains, restores the
@@ -132,12 +141,13 @@ original value, reopens the page again, and confirms cleanup.
 
 It does not terminate/relaunch the process, wait for screen timeout, exercise
 auto-connect with hardware, close the app with active sensors, or verify how
-the two graph settings change real graphs.
+the graph settings change rendered graphs or sampling-rate labels.
 
 ### `ThisDevice`
 
 File: [`this_device_connection_test.dart`](../../patrol_test/this_device_connection_test.dart)  
-Real-device state: **verified** on Pixel 9a, Android 17/API 37.
+Real-device state: **verified** on Pixel 9a, Android 17/API 37 on 2026-09-29
+and again on 2026-10-15 against the current main-based app.
 
 It checks:
 
@@ -154,7 +164,8 @@ behavior, reconnect, or phone model-specific sampling limitations.
 ### `ThisDeviceData`
 
 File: [`this_device_recording_test.dart`](../../patrol_test/this_device_recording_test.dart)  
-Real-device state: **verified twice** on Pixel 9a, Android 17/API 37.
+Real-device state: **verified** on Pixel 9a, Android 17/API 37 twice on
+2026-09-29 and again on 2026-10-15 against the current main-based app.
 
 It checks:
 
@@ -176,8 +187,9 @@ test file opening and sharing.
 ### `PairDiscovery`
 
 File: [`pair_discovery_test.dart`](../../patrol_test/pair_discovery_test.dart)  
-Real-device state: an earlier discovery run was used while developing the pair
-fixture; this is a diagnostic suite rather than the final pairing assertion.
+Real-device state: passed on Pixel 9a / Android 17 (API 37) on 2026-10-15 after
+an initial scan with no results; it remains a discovery-only check, while the
+pair lifecycle test makes the final pairing assertions.
 
 It checks:
 
@@ -194,7 +206,8 @@ or prove that either advertiser is usable.
 
 File: [`open_earable_pair_test.dart`](../../patrol_test/open_earable_pair_test.dart)  
 Real-device state: **verified** on Pixel 9a, Android 17/API 37 with two
-OpenEarable-2B01 devices running firmware `2.2.7-dev.12+g23ff47e.dirty`.
+OpenEarable-2B01 devices running firmware `2.2.7-dev.12+g23ff47e.dirty` on
+2026-09-30 and again on 2026-10-15 against the current main-based app.
 
 It checks:
 
@@ -216,8 +229,11 @@ audio/LED/battery features, or measure left/right time synchronization.
 
 File: [`open_earable_pair_sample_rate_test.dart`](../../patrol_test/open_earable_pair_sample_rate_test.dart)  
 Real-device state: **verified** on Pixel 9a, Android 17/API 37 with two
-OpenEarable-2B01 devices on 2026-09-30. All 25/50/100 Hz stages passed; see the
-[run record](runs/2026-09-30-pixel-9a-pair-sample-rates.md).
+OpenEarable-2B01 devices on 2026-09-30 and again on 2026-10-15 against current
+main. The current-main run checked 25/50/100 Hz and measured 24.99, 49.95, and
+99.90 Hz on both L/R accelerometer CSVs, respectively. An earlier attempt
+revealed a firmware-update dialog that blocked the UI; the helper now dismisses
+it and cleans up partial connections. See the [current regression run](runs/2026-10-15-pixel-9a-upstream-main-regression.md).
 
 For every requested rate, it checks:
 
@@ -253,8 +269,9 @@ Hz as streamable 9-Axis IMU rates. Run all three in one connection:
 This test measures samples that reached the app and were written to CSV. It
 does not prove that acceleration values are physically accurate, that samples
 are synchronized between L and R, that packet timing has low jitter, that
-every other sensor meets its rate, or that long recordings remain loss-free.
-Those are separate tests listed below.
+every other sensor meets its rate, that long recordings remain loss-free, or
+that the expected/actual sampling-rate labels on the live graphs agree with the
+CSV measurements. Those are separate checks listed below.
 
 ### `Hardware`
 
@@ -280,21 +297,22 @@ The main missing areas are:
 
 | Area | Examples of checks still available to add |
 | --- | --- |
-| Connection failures | Bluetooth off, scan timeout, connection timeout, cancellation, retry, out-of-range loss, auto-reconnect, duplicate devices, a third nearby OpenEarable, and one side disappearing from a pair. |
+| Connection failures | Bluetooth off, scan timeout, connection timeout, cancellation, retry, out-of-range loss, auto-reconnect, duplicate devices, a third nearby OpenEarable, one side disappearing from a pair, preserving the surviving side while recovering its partner, retrying an unknown stereo position, and Android BLE cleanup after reconnect. |
 | Device information | Exact name, identifier, hardware/firmware version, battery level/status/health/energy, refresh behavior, and capability-dependent sections. |
 | Pair behavior | Side reassignment, restart persistence, mismatched firmware, partial-pair operation, multiple pairs, pair time synchronization, and reconnect after one or both devices sleep. |
-| Device controls | Listening mode, microphone source and gain, mute/reset, power-saving mode, status LED, RGB color, and verifying the physical output of those controls. |
-| Sensor configuration | Every sensor, every advertised rate, Stream versus on-device SD target, Off, multiple simultaneous sensors, saved profiles, invalid/duplicate profile names, pair readback after splitting, and failure during Apply. |
-| Sample-rate quality | All streamable sensors, 25/50/100 Hz matrix, multiple sensors concurrently, long-duration loss rate, jitter distribution, maximum timestamp gap, duplicated samples, L/R clock offset and drift, background/locked-phone behavior, and repeatability across firmware versions. |
-| Live Data | Correct units and axes, numerical updates, chart detail, channel visibility, low/high-pass and notch controls, no-data hiding, disabled graphs, and disconnect/reconnect while graphs are open. |
-| Recorder | Multiple recordings, elapsed-time accuracy, navigation while recording, rapid Start/Stop, stop-and-disable-sensors behavior, filename/content schema, open/share/cancel, batch delete, interruption, storage-full errors, and recordings across reconnect. |
+| Device controls | Listening mode, microphone source and gain, mute/reset, power-saving mode, saved status-LED/RGB values after reopening or changing devices, and verifying the physical output of those controls. |
+| Sensor configuration | Every sensor, sorted rate choices, every advertised rate, device-reported state after Apply, Stream versus on-device SD target and filename prefix, Off, multiple simultaneous sensors, saved profiles, invalid/duplicate profile names, pair readback after splitting, and failure during Apply. |
+| Sample-rate quality | The expected/actual labels on live graphs, all streamable sensors and rates, multiple sensors concurrently, long-duration loss rate, jitter distribution, maximum timestamp gap, duplicated samples, L/R clock offset and drift, background/locked-phone behavior, and repeatability across firmware versions. The current pair test checks only CSV timestamps for the 9-Axis IMU. |
+| Live Data | Correct units and axes, numerical updates, chart detail, channel visibility, expected/actual rate labels, low/high-pass and notch controls, no-data hiding, disabled graphs, and disconnect/reconnect while graphs are open. |
+| Recorder | Multiple recordings, elapsed-time accuracy, navigation while recording, rapid Start/Stop, stop-and-disable-sensors behavior, on-device recording prefixes/targets, filename/content schema, file-open failures, open/share/cancel, batch delete, locked/background recording, Android microphone capture during music playback, storage-full errors, and recordings across reconnect. |
 | Labels | Create/edit/delete label groups, validation, persistence, segment switching while recording, and exported label timing. |
-| Built-in apps | Posture Tracker, calibration and reminders; Heart Tracker signals and quality states; Seal Check measurement, graphs, export, retry, and disconnect behavior. |
-| Network connector | Enable/disable, port/path validation, persistence, local client connection, message schema, disconnection, and no-network recovery. |
-| Logs and About | Open/share/delete logs, empty/error logs, version display, licenses, and browser links. |
-| Firmware update | Checklist, release catalog, offline retry, file picker, progress, cancel/abort, recovery, image slots, successful lab update, and failure without a false success. |
+| Built-in apps | Posture Tracker stop/leave cleanup and reconnect recovery; calibration and reminders; Heart Tracker reconnect recovery, signals, and quality states; Seal Check measurement, graphs, export, retry, and disconnect behavior. |
+| Network connector | Enable/disable, port/path validation, persistence, local client connection, message schema, sensor-configuration report sharing, websocket/log lifecycle, disconnection, and no-network recovery. |
+| Logs and About | Open/share/delete logs, empty/error logs, shared logging lifecycle, version display, licenses, and browser links. |
+| Firmware update | Checklist, release catalog, offline retry, file picker, progress, cancel/abort gating, early reconnect and verification countdown, image-slot recovery, preserved FOTA logs, successful lab update, and failure without a false success. |
 | Android lifecycle/accessibility | Home/background, lock/unlock, process death, permission revocation, rotation, font/display scaling, keyboard overlap, dark mode, and screen-reader semantics. |
 | iPhone | The corresponding iOS onboarding, permissions, Bluetooth, native dialogs, background behavior, recording storage/sharing, and hardware journeys. |
+| Sensor decoding compatibility | 1.6 compact IMU/PPG data decoding and firmware-revision selection. The Patrol rate test inspects CSV timestamps only; deterministic payload decoding belongs in package tests with captured fixtures, plus hardware smoke tests for live values and firmware variants. |
 | Performance/reliability | Memory growth, battery use, UI responsiveness, repeated connect/disconnect cycles, hour-long streaming/recording, and stress with many sensors. |
 | Physical correctness | Known-motion sensor calibration, sensor bias/noise, optical/temperature reference comparison, audio quality, microphone gain response, LED color/brightness, and seal/heart algorithm accuracy. These require controlled fixtures or reference instruments in addition to Patrol. |
 

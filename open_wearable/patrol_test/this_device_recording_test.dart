@@ -64,6 +64,9 @@ void main() {
       await $(UiTestKeys.deviceDisconnect).tap();
       await $(UiTestKeys.devicesConnect).waitUntilVisible();
     },
+    // This journey asserts Flutter widgets directly; it does not need Android
+    // semantics, which can remain active after the phone-device flow.
+    semanticsEnabled: false,
   );
 }
 

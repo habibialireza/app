@@ -10,6 +10,7 @@ const _settingKeys = <ValueKey<String>>[
   UiTestKeys.settingsDisableSensorsOnClose,
   UiTestKeys.settingsDisableLiveGraphs,
   UiTestKeys.settingsHideEmptyGraphs,
+  UiTestKeys.settingsShowSamplingRates,
 ];
 
 void main() {

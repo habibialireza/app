@@ -303,6 +303,9 @@ class _GeneralSettingsPageState extends State<GeneralSettingsPage> {
                                         .showSamplingRatesListenable,
                                     builder: (context, showSamplingRates, _) =>
                                         SwitchListTile.adaptive(
+                                      key: const ValueKey(
+                                        'ui.settings.showSamplingRates',
+                                      ),
                                       value: showSamplingRates,
                                       onChanged: _isSaving
                                           ? null

@@ -35,5 +35,8 @@ void main() {
       );
       expect($(UiTestKeys.connectedThisDevice), findsNothing);
     },
+    // This journey asserts the Flutter widget tree directly. The production
+    // phone-device flow can leave Patrol's semantics handle active on Android.
+    semanticsEnabled: false,
   );
 }

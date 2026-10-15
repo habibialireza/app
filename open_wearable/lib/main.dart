@@ -223,7 +223,10 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
               actions: [
                 PlatformDialogAction(
                   cupertino: (_, __) => CupertinoDialogActionData(),
-                  child: const Text('Later'),
+                  child: const Text(
+                    'Later',
+                    key: ValueKey<String>('ui.firmwareUpdate.later'),
+                  ),
                   onPressed: () => rootNavigatorKey.currentState?.pop(),
                 ),
                 PlatformDialogAction(

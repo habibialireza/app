@@ -26,12 +26,12 @@ $suiteDescriptions = [ordered]@{
     Permissions        = 'Complete first-run Android Bluetooth and microphone permissions.'
     PermissionRecovery = 'Recover after microphone permission was skipped during onboarding.'
     Overview           = 'Check every Overview shortcut reaches its intended screen.'
-    Settings           = 'Toggle, reopen, verify, and restore all five General settings.'
+    Settings           = 'Toggle, reopen, verify, and restore all six General settings.'
     ThisDevice         = 'Connect the phone as a sensor device, inspect details, and disconnect.'
     ThisDeviceData     = 'Set phone Accelerometer to 5 Hz, stream, record CSV, and delete it.'
     PairDiscovery      = 'Exercise the OpenEarable-only scan filter without connecting hardware.'
     PairHardware       = 'Discover two OpenEarables, connect, verify L/R pair, split/recombine, and disconnect.'
-    PairSampleRate     = 'For two OpenEarables, set requested IMU rate(s) and verify received L/R CSV rates.'
+    PairSampleRate     = 'For two OpenEarables, set requested IMU rate(s) and verify received L/R CSV rates; live graph labels are not asserted.'
     Hardware           = 'Connect one exact Bluetooth device ID, inspect it, and disconnect.'
 }
 
