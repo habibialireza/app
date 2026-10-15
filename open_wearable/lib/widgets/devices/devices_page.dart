@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:open_earable_flutter/open_earable_flutter.dart';
 import 'package:open_wearable/models/wearable_connector.dart';
 import 'package:open_wearable/models/wearable_display_group.dart';
+import 'package:open_wearable/models/this_device_wearable.dart';
 import 'package:open_wearable/view_models/wearables_provider.dart';
 import 'package:open_wearable/widgets/common/no_devices_prompt.dart';
 import 'package:open_wearable/widgets/connector_activity_indicator.dart';
@@ -67,6 +68,7 @@ class _DevicesPageState extends State<DevicesPage> {
           const AppBarRecordingIndicator(),
           const ConnectorActivityIndicator(),
           PlatformIconButton(
+            key: const ValueKey('ui.devices.connect'),
             icon: Icon(context.platformIcons.bluetooth),
             onPressed: () {
               context.push('/connect-devices');
@@ -280,6 +282,13 @@ class DeviceRow extends StatelessWidget {
     );
 
     return GestureDetector(
+      key: ValueKey(
+        primary is ThisDeviceWearable
+            ? 'ui.devices.thisDevice'
+            : group.isCombined
+                ? 'ui.devices.pair.$pairKey'
+                : 'ui.devices.device.${primary.deviceId}',
+      ),
       onTap: () => _openDetails(context),
       child: Card(
         margin: cardMargin,
@@ -514,6 +523,11 @@ class DeviceRow extends StatelessWidget {
               ),
             ),
             Switch.adaptive(
+              key: ValueKey(
+                group.isCombined
+                    ? 'ui.devices.pair.combine.$pairKey'
+                    : 'ui.devices.pair.combine.$pairKey.${group.primary.deviceId}',
+              ),
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               value: combined,
               onChanged: enabled

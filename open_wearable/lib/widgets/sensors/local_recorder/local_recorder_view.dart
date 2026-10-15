@@ -102,6 +102,7 @@ class _LocalRecorderViewState extends State<LocalRecorderView> {
                 onPressed: () => Navigator.pop(context, false),
               ),
               PlatformDialogAction(
+                key: const ValueKey('ui.recorder.confirmDelete'),
                 cupertino: (_, __) => CupertinoDialogActionData(
                   isDestructiveAction: true,
                 ),
@@ -280,7 +281,13 @@ class _LocalRecorderViewState extends State<LocalRecorderView> {
   }
 
   Future<void> _openRecordingFile(LocalRecorderRecordingFile file) async {
-    await localRecorderOpenRecordingFile(file);
+    try {
+      await localRecorderOpenRecordingFile(file);
+    } catch (_) {
+      await _showErrorDialog(
+        'Could not open this recording. Use Share file to open it with another app.',
+      );
+    }
   }
 
   Future<void> _openAllRecordingsPage({required bool isRecording}) async {
@@ -310,6 +317,7 @@ class _LocalRecorderViewState extends State<LocalRecorderView> {
           child: RefreshIndicator(
             onRefresh: _listRecordings,
             child: ListView(
+              key: const ValueKey('ui.sensors.recorder.content'),
               padding: SensorPageSpacing.pagePaddingWithBottomInset(context),
               children: [
                 LocalRecorderRecordingCard(
@@ -336,6 +344,7 @@ class _LocalRecorderViewState extends State<LocalRecorderView> {
                 if (!hasRecordings) const LocalRecorderEmptyStateCard(),
                 if (latestRecording != null)
                   LocalRecorderRecordingFolderCard(
+                    key: const ValueKey('ui.recorder.latestFolder'),
                     folder: latestRecording,
                     isCurrentRecording: isRecording,
                     isExpanded: _expandedFolders.contains(latestRecording.path),
@@ -375,6 +384,9 @@ class _LocalRecorderViewState extends State<LocalRecorderView> {
                       }
                     },
                     onShareFolder: () => _shareFolder(latestRecording),
+                    deleteButtonKey: const ValueKey(
+                      'ui.recorder.deleteLatest',
+                    ),
                     onDeleteFolder: () async {
                       final deleted =
                           await _confirmAndDeleteRecording(latestRecording);

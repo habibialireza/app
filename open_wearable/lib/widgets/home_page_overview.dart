@@ -131,6 +131,7 @@ class _OverviewWorkflowIntroCard extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             _OverviewWorkflowStep(
+              actionKey: const ValueKey('ui.overview.connectDevices'),
               icon: Icons.bluetooth_connected,
               title: 'Connect devices',
               detail: 'Pair wearables and confirm connection.',
@@ -139,6 +140,7 @@ class _OverviewWorkflowIntroCard extends StatelessWidget {
               onTap: onConnectRequested,
             ),
             _OverviewWorkflowStep(
+              actionKey: const ValueKey('ui.overview.configureSensors'),
               icon: Icons.tune_outlined,
               title: 'Configure sensors',
               detail: 'Set required channels and sampling.',
@@ -147,6 +149,7 @@ class _OverviewWorkflowIntroCard extends StatelessWidget {
               onTap: () => onSensorTabRequested(0),
             ),
             _OverviewWorkflowStep(
+              actionKey: const ValueKey('ui.overview.viewSensorData'),
               icon: Icons.ssid_chart_outlined,
               title: 'View sensor data',
               detail: 'Check live signal quality before capture.',
@@ -155,6 +158,7 @@ class _OverviewWorkflowIntroCard extends StatelessWidget {
               onTap: () => onSensorTabRequested(1),
             ),
             _OverviewWorkflowStep(
+              actionKey: const ValueKey('ui.overview.record'),
               icon: Icons.fiber_smart_record,
               title: 'Record',
               detail: 'Start and monitor recording.',
@@ -170,6 +174,7 @@ class _OverviewWorkflowIntroCard extends StatelessWidget {
 }
 
 class _OverviewWorkflowStep extends StatelessWidget {
+  final Key actionKey;
   final IconData icon;
   final String title;
   final String detail;
@@ -178,6 +183,7 @@ class _OverviewWorkflowStep extends StatelessWidget {
   final VoidCallback onTap;
 
   const _OverviewWorkflowStep({
+    required this.actionKey,
     required this.icon,
     required this.title,
     required this.detail,
@@ -236,6 +242,7 @@ class _OverviewWorkflowStep extends StatelessWidget {
             const SizedBox(width: 10),
             Expanded(
               child: InkWell(
+                key: actionKey,
                 borderRadius: BorderRadius.circular(10),
                 onTap: onTap,
                 child: Padding(

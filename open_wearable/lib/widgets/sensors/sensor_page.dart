@@ -110,11 +110,14 @@ class _SensorPageState extends State<SensorPage>
     return Consumer<WearablesProvider>(
       builder: (context, wearablesProvider, child) {
         final hasConnectedDevices = wearablesProvider.wearables.isNotEmpty;
-        final noDevicesPrompt = Center(
-          child: NoDevicesPrompt(
-            onScanPressed: () => context.push('/connect-devices'),
-          ),
-        );
+        Widget noDevicesPrompt(String contentKey, String scanButtonKey) =>
+            Center(
+              key: ValueKey(contentKey),
+              child: NoDevicesPrompt(
+                scanButtonKey: ValueKey(scanButtonKey),
+                onScanPressed: () => context.push('/connect-devices'),
+              ),
+            );
 
         return PlatformScaffold(
           body: NestedScrollView(
@@ -140,9 +143,16 @@ class _SensorPageState extends State<SensorPage>
                   bottom: TabBar(
                     controller: _tabController,
                     tabs: [
-                      const Tab(text: 'Configure'),
-                      const Tab(text: 'Live Data'),
+                      const Tab(
+                        key: ValueKey('ui.sensors.configuration'),
+                        text: 'Configure',
+                      ),
+                      const Tab(
+                        key: ValueKey('ui.sensors.values'),
+                        text: 'Live Data',
+                      ),
                       Tab(
+                        key: const ValueKey('ui.sensors.recording'),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -166,12 +176,18 @@ class _SensorPageState extends State<SensorPage>
                           _tabController.animateTo(1);
                         },
                       )
-                    : noDevicesPrompt,
+                    : noDevicesPrompt(
+                        'ui.sensors.configure.empty',
+                        'ui.sensors.configure.scan',
+                      ),
                 hasConnectedDevices
                     ? SensorValuesPage(
                         sharedProviders: _sensorDataProviders,
                       )
-                    : noDevicesPrompt,
+                    : noDevicesPrompt(
+                        'ui.sensors.liveData.empty',
+                        'ui.sensors.liveData.scan',
+                      ),
                 const LocalRecorderView(),
               ],
             ),

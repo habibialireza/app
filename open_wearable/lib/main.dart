@@ -43,77 +43,84 @@ import 'view_models/wearables_provider.dart';
 
 const bool _isAppStorePreview = bool.fromEnvironment('APP_STORE_PREVIEW');
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  runApp(await createApp());
+}
+
+/// Initializes the app's production services and returns its root widget.
+///
+/// The caller must initialize Flutter's binding first. Keeping initialization
+/// separate from [runApp] lets on-device UI tests await the same startup before
+/// mounting the app with their test binding. Create once per app process; the
+/// router and device services retain process-wide state.
+Future<Widget> createApp() async {
   LogFileManager logFileManager = await LogFileManager.create();
   final wearableConnector = WearableConnector();
   initOpenWearableLogger(logFileManager.libLogger);
   initLogger(logFileManager.logger);
 
   if (_isAppStorePreview) {
-    runApp(AppStorePreviewApp(logFileManager: logFileManager));
-    return;
+    return AppStorePreviewApp(logFileManager: logFileManager);
   }
 
   await AutoConnectPreferences.initialize();
   await AppShutdownSettings.initialize();
   await ConnectorSettings.initialize(wearableConnector: wearableConnector);
 
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (context) => WearablesProvider()),
-        ChangeNotifierProvider(
-          create: (context) => FirmwareUpdateRequestProvider(),
-        ),
-        ChangeNotifierProvider(
-          create: (context) => LabelGroupProvider(),
-        ),
-        ChangeNotifierProxyProvider<LabelGroupProvider, LabelProvider>(
-          create: (context) => LabelProvider(null),
-          update: (context, labelGroupProvider, labelProvider) {
-            labelProvider?.setLabelGroup(labelGroupProvider.selectedLabelGroup);
-            return labelProvider!;
-          },
-        ),
-        ChangeNotifierProxyProvider2<WearablesProvider, LabelGroupProvider,
-            SensorRecorderProvider>(
-          create: (context) => SensorRecorderProvider(),
-          update: (
-            context,
-            wearablesProvider,
-            labelGroupProvider,
-            recorderProvider,
-          ) {
-            final provider = recorderProvider ?? SensorRecorderProvider();
-            final labelGroup = labelGroupProvider.selectedLabelGroup;
-            final wearables = [...wearablesProvider.wearables];
-            if (labelGroup != null) {
-              final labelProvider = context.read<LabelProvider>();
-              wearables.add(
-                LabelWearable(
-                  labelGroup: labelGroup,
-                  labelStream: labelProvider.activeLabelStream,
-                ),
-              );
-            }
-            logger.t(
-              'Updating SensorRecorderProvider with label group: $labelGroup',
+  return MultiProvider(
+    providers: [
+      ChangeNotifierProvider(create: (context) => WearablesProvider()),
+      ChangeNotifierProvider(
+        create: (context) => FirmwareUpdateRequestProvider(),
+      ),
+      ChangeNotifierProvider(
+        create: (context) => LabelGroupProvider(),
+      ),
+      ChangeNotifierProxyProvider<LabelGroupProvider, LabelProvider>(
+        create: (context) => LabelProvider(null),
+        update: (context, labelGroupProvider, labelProvider) {
+          labelProvider?.setLabelGroup(labelGroupProvider.selectedLabelGroup);
+          return labelProvider!;
+        },
+      ),
+      ChangeNotifierProxyProvider2<WearablesProvider, LabelGroupProvider,
+          SensorRecorderProvider>(
+        create: (context) => SensorRecorderProvider(),
+        update: (
+          context,
+          wearablesProvider,
+          labelGroupProvider,
+          recorderProvider,
+        ) {
+          final provider = recorderProvider ?? SensorRecorderProvider();
+          final labelGroup = labelGroupProvider.selectedLabelGroup;
+          final wearables = [...wearablesProvider.wearables];
+          if (labelGroup != null) {
+            final labelProvider = context.read<LabelProvider>();
+            wearables.add(
+              LabelWearable(
+                labelGroup: labelGroup,
+                labelStream: labelProvider.activeLabelStream,
+              ),
             );
-            provider.synchronizeConnectedWearables(
-              wearables,
-            );
-            return provider;
-          },
-        ),
-        Provider.value(value: wearableConnector),
-        ChangeNotifierProvider(
-          create: (context) => AppBannerController(),
-        ),
-        ChangeNotifierProvider.value(value: logFileManager),
-      ],
-      child: const MyApp(),
-    ),
+          }
+          logger.t(
+            'Updating SensorRecorderProvider with label group: $labelGroup',
+          );
+          provider.synchronizeConnectedWearables(
+            wearables,
+          );
+          return provider;
+        },
+      ),
+      Provider.value(value: wearableConnector),
+      ChangeNotifierProvider(
+        create: (context) => AppBannerController(),
+      ),
+      ChangeNotifierProvider.value(value: logFileManager),
+    ],
+    child: const MyApp(),
   );
 }
 
@@ -128,6 +135,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   late final StreamSubscription _unsupportedFirmwareSub;
   late final StreamSubscription _wearableEventSub;
+  late final StreamSubscription _fotaVerificationSub;
   StreamSubscription<AvailabilityState>? _bleAvailabilitySub;
   late final BluetoothAutoConnector _autoConnector;
   late final WearableConnector _wearableConnector;
@@ -215,7 +223,10 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
               actions: [
                 PlatformDialogAction(
                   cupertino: (_, __) => CupertinoDialogActionData(),
-                  child: const Text('Later'),
+                  child: const Text(
+                    'Later',
+                    key: ValueKey<String>('ui.firmwareUpdate.later'),
+                  ),
                   onPressed: () => rootNavigatorKey.currentState?.pop(),
                 ),
                 PlatformDialogAction(
@@ -293,6 +304,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       navStateGetter: () => rootNavigatorKey.currentState,
       prefsFuture: _prefsFuture,
       onWearableConnected: _handleWearableConnected,
+      connectedWearables: () => _wearablesProvider.wearables,
     );
     AutoConnectPreferences.autoConnectEnabledListenable.addListener(
       _syncAutoConnectorWithSetting,
@@ -304,6 +316,16 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     _wearableEventSub = _wearableConnector.events.listen((event) {
       if (event is WearableConnectEvent) {
         _handleWearableConnected(event.wearable);
+      }
+    });
+
+    // FOTA can reconnect before its success callback arms verification.
+    _fotaVerificationSub = FotaPostUpdateVerificationCoordinator
+        .instance.pendingVerificationIds
+        .listen((pendingIds) {
+      if (pendingIds.isEmpty) return;
+      for (final wearable in _wearablesProvider.wearables.toList()) {
+        unawaited(_maybeFinalizePostUpdateVerification(wearable));
       }
     });
 
@@ -593,7 +615,14 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   }
 
   void _handleWearableConnected(Wearable wearable) {
+    final alreadyConnected = _wearablesProvider.wearables.any(
+      (connected) => connected.deviceId == wearable.deviceId,
+    );
     _wearablesProvider.addWearable(wearable);
+    // ProxyProvider updates wait for a frame, which a locked phone does not draw.
+    if (!alreadyConnected) {
+      unawaited(_sensorRecorderProvider.addWearable(wearable));
+    }
     _maybeFinalizePostUpdateVerification(wearable);
   }
 
@@ -764,7 +793,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         _scheduleCloseShutdownIfNeeded();
       }
     } else if (state == AppLifecycleState.paused) {
-      _autoConnector.stop();
       _backgroundEnteredAt ??= DateTime.now();
       if (_sensorRecorderProvider.isRecording) {
         _pendingCloseShutdownTimer?.cancel();
@@ -772,6 +800,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         _setBackgroundExecutionForShutdown(false);
         _setBackgroundExecutionForRecording(true);
       } else {
+        _autoConnector.stop();
         _setBackgroundExecutionForRecording(false);
         _scheduleCloseShutdownIfNeeded();
       }
@@ -967,6 +996,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     unawaited(ConnectorSettings.dispose());
     _unsupportedFirmwareSub.cancel();
     _wearableEventSub.cancel();
+    _fotaVerificationSub.cancel();
     _bleAvailabilitySub?.cancel();
     _wearableProvEventSub.cancel();
     AutoConnectPreferences.autoConnectEnabledListenable.removeListener(

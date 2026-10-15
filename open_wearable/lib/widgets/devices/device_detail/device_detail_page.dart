@@ -281,8 +281,12 @@ class _DeviceDetailPageState extends State<DeviceDetailPage> {
           title: 'Status LED',
           subtitle: 'Customize the status indicator behavior.',
           child: StatusLEDControlWidget(
+            key: ObjectKey(widget.device),
             statusLED: widget.device.requireCapability<StatusLed>(),
             rgbLed: widget.device.requireCapability<RgbLed>(),
+            stateReader: widget.device.hasCapability<LedStateReader>()
+                ? widget.device.requireCapability<LedStateReader>()
+                : null,
           ),
         )
       else if (widget.device.hasCapability<RgbLed>())
@@ -303,6 +307,7 @@ class _DeviceDetailPageState extends State<DeviceDetailPage> {
     ];
 
     return PlatformScaffold(
+      key: ValueKey('ui.device.details.${widget.device.deviceId}'),
       appBar: PlatformAppBar(
         title: const Text('Device details'),
       ),
@@ -404,6 +409,11 @@ class _DeviceDetailPageState extends State<DeviceDetailPage> {
               children: [
                 Expanded(
                   child: OutlinedButton.icon(
+                    key: ValueKey(
+                      _canForgetDevice
+                          ? 'ui.device.forgetSystem'
+                          : 'ui.device.disconnect',
+                    ),
                     onPressed: _canForgetDevice
                         ? _showForgetDialog
                         : _disconnectDevice,
